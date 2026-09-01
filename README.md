@@ -64,9 +64,8 @@ When income arrives, choose how to split it. Make contributions to specific proj
 
 ## 🛠️ Built With
 
-* **Frontend:** React.js / HTML5 / CSS3
-* **State Management:** React Context API
-* **Icons:** FontAwesome
+* **Frontend:** Google AI Studio
+* **Icons:** react, lucide-react
 
 ---
 
