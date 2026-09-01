@@ -72,7 +72,7 @@ When income arrives, choose how to split it. Make contributions to specific proj
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License.
 
 ---
 
