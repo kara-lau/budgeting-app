@@ -49,6 +49,8 @@ export interface Shift {
   status: ShiftStatus;
   receivedDate?: string;
   notes?: string;
+  incomeType?: 'shift' | 'yippee';
+  paymentMethod?: 'bank_transfer' | 'giftcard' | 'cash';
   createdAt: number;
 }
 

@@ -109,6 +109,15 @@ export default function App() {
     return newPreset;
   };
 
+  const handleUpdateJobPreset = (updatedPreset: JobPreset) => {
+    setAppState((prev) => ({
+      ...prev,
+      jobPresets: (prev.jobPresets || DEFAULT_JOB_PRESETS).map((j) =>
+        j.id === updatedPreset.id ? updatedPreset : j
+      ),
+    }));
+  };
+
   const handleDeleteJobPreset = (id: string) => {
     setAppState((prev) => ({
       ...prev,
@@ -252,8 +261,12 @@ export default function App() {
         <SettingsScreen
           categoryLimits={appState.categoryLimits}
           monthlyBudgetLimit={appState.monthlyBudgetLimit}
+          jobPresets={appState.jobPresets || DEFAULT_JOB_PRESETS}
           onBack={() => setCurrentScreen('home')}
           onUpdateCategoryLimits={handleUpdateCategoryLimits}
+          onAddJobPreset={handleAddJobPreset}
+          onUpdateJobPreset={handleUpdateJobPreset}
+          onDeleteJobPreset={handleDeleteJobPreset}
         />
       )}
     </PhoneFrame>
