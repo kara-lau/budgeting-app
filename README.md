@@ -13,7 +13,7 @@ A simple and visual budgeting application designed for casual and part-time work
 
 ---
 
-## Getting Started
+## 🚀 Getting Started
 
 ### Prerequisites
 
@@ -48,16 +48,17 @@ Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
 
 ---
 
-## How It Works (Quick Actions)
+## ⚙️ How It Works
 
+3 Quick Actions are all you need:
 ### 1. Log an Expense
 Track spending on the go. Expenses are deducted from your general budget, updating your monthly progress bar.
 
 ### 2. Log a Shift
-Input your hours worked and hourly rate immediately after a shift. The app automatically calculates your earnings and updates your available balance.
+Input your hours worked and hourly rate immediately after a shift, of check it off once you've been paid. The app tracks your accrued income and cash on-hand, automatically updating your available balance.
 
 ### 3. Allocate Earnings
-When income arrives, choose how to split it. Making contributions to specific project goals or send it straight to general savings.
+When income arrives, choose how to split it. Make contributions to specific project goals or send it straight to general savings.
 
 ---
 
@@ -77,6 +78,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 👤 Contact
 
-Your Name - [@your_twitter](https://twitter.com) - email@example.com
-
-Project Link: [https://github.com](https://github.com)
+Kara Lau - https://www.linkedin.com/in/kara-lau-99b1a8376/ - karajmlau@gmail.com
+Project Link: [https://github.com/kara-lau/budgeting-app.git]
