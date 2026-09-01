@@ -1,0 +1,6 @@
+{
+  "name": "CashFlow Minimalist Phone App",
+  "description": "Minimalist phone app to record expenses, log shift earnings, view 4-category radial budget usage, and allocate funds directly to savings projects.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
