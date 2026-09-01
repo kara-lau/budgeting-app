@@ -324,8 +324,8 @@ export const ShiftTracker: React.FC<ShiftTrackerProps> = ({
               <input
                 id="shift-hours-input"
                 type="number"
-                step="0.25"
-                min="0.25"
+                step="0.01"
+                min="0.01"
                 required
                 value={hoursWorked}
                 onChange={(e) => setHoursWorked(e.target.value)}

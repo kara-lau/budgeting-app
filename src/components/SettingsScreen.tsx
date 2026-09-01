@@ -541,8 +541,8 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
                     </label>
                     <input
                       type="number"
-                      step="0.5"
-                      min="0.5"
+                      step="0.01"
+                      min="0.01"
                       value={jobFormHours}
                       onChange={(e) => setJobFormHours(e.target.value)}
                       className="w-full px-2.5 py-2 text-xs font-bold rounded-xl bg-stone-50 border border-stone-200 focus:bg-white focus:ring-1 focus:ring-stone-400 text-stone-900"

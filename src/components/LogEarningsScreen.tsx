@@ -360,7 +360,7 @@ export const LogEarningsScreen: React.FC<LogEarningsScreenProps> = ({
                       type="button"
                       onClick={() => setIsCreatingJob(true)}
                       className="text-xs font-bold flex items-center gap-1 hover:underline cursor-pointer"
-                      style={{ color: '#FB5607' }}
+                      style={{ color: '#8338EC' }}
                     >
                       <Plus className="w-3.5 h-3.5" />
                       <span>New Job</span>
@@ -379,7 +379,6 @@ export const LogEarningsScreen: React.FC<LogEarningsScreenProps> = ({
                           {job.title} — ${job.hourlyRate.toFixed(2)}/hr ({job.defaultHours || 6}h)
                         </option>
                       ))}
-                      <option value="__yippee__">✨ Yippee earnings (Misc / Gifts)</option>
                       <option value="__new__">+ Add a new job type...</option>
                     </select>
                     <ChevronDown className="w-4 h-4 text-stone-500 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
@@ -436,8 +435,8 @@ export const LogEarningsScreen: React.FC<LogEarningsScreenProps> = ({
                           </label>
                           <input
                             type="number"
-                            step="0.25"
-                            min="0.25"
+                            step="0.01"
+                            min="0.01"
                             value={hoursWorked}
                             onChange={(e) => setHoursWorked(e.target.value)}
                             className="w-full px-3 py-2 text-xs font-bold rounded-xl bg-stone-50 border border-stone-200 focus:bg-white focus:ring-1 focus:ring-stone-400 text-stone-900"
@@ -1005,9 +1004,9 @@ export const LogEarningsScreen: React.FC<LogEarningsScreenProps> = ({
                   </label>
                   <input
                     type="number"
-                    step="0.5"
-                    min="0.5"
-                    placeholder="6.0"
+                    step="0.01"
+                    min="0.01"
+                    placeholder="6.00"
                     value={newJobHours}
                     onChange={(e) => setNewJobHours(e.target.value)}
                     className="w-full px-3 py-2 text-xs font-bold rounded-xl bg-stone-50 border border-stone-200 focus:bg-white focus:ring-1 focus:ring-stone-400 text-stone-900"
