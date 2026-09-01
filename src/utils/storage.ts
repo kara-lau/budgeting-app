@@ -247,6 +247,34 @@ const generateSeedData = (): AppState => {
   };
 };
 
+export const getEmptyAppState = (): AppState => {
+  const initialAllocations = DEFAULT_CATEGORIES.map(cat => ({
+    categoryId: cat.id,
+    percentage: cat.defaultPercentage,
+    isLocked: false,
+  }));
+
+  return {
+    expenses: [],
+    shifts: [],
+    budgetConfig: {
+      earningsSource: 'received',
+      customPoolAmount: 0,
+      allocations: initialAllocations,
+    },
+    jobPresets: DEFAULT_JOB_PRESETS,
+    savingsProjects: DEFAULT_SAVINGS_PROJECTS.map(p => ({ ...p, currentAmount: 0 })),
+    generalSavings: 0,
+    monthlyBudgetLimit: 1200.00,
+    categoryLimits: {
+      eating_out: 350,
+      leisure: 250,
+      groceries: 450,
+      other: 150,
+    },
+  };
+};
+
 export const loadAppState = (): AppState => {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -258,12 +286,12 @@ export const loadAppState = (): AppState => {
     const parsed = JSON.parse(raw);
     
     // Ensure savingsProjects exist
-    if (!parsed.savingsProjects || parsed.savingsProjects.length === 0) {
+    if (!parsed.savingsProjects) {
       parsed.savingsProjects = DEFAULT_SAVINGS_PROJECTS;
     }
 
     if (typeof parsed.generalSavings !== 'number') {
-      parsed.generalSavings = 450.00;
+      parsed.generalSavings = 0;
     }
 
     if (!parsed.monthlyBudgetLimit) {
@@ -272,10 +300,10 @@ export const loadAppState = (): AppState => {
 
     if (!parsed.categoryLimits) {
       parsed.categoryLimits = {
-        eating_out: 350,
-        leisure: 250,
-        groceries: 450,
-        other: 150,
+        eating_out: 200,
+        leisure: 200,
+        groceries: 100,
+        other: 100,
       };
     }
 

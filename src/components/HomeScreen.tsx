@@ -45,7 +45,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
               {todayStr}
             </span>
             <h1 className="text-2xl font-bold tracking-tight text-stone-900">
-              CashFlow
+              Yippee Planner
             </h1>
           </div>
           <button

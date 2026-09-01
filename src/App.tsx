@@ -17,7 +17,7 @@ import {
   Shift, 
   ShiftStatus 
 } from './types';
-import { loadAppState, saveAppState } from './utils/storage';
+import { loadAppState, saveAppState, getEmptyAppState } from './utils/storage';
 
 export type AppScreen = 
   | 'home'
@@ -176,12 +176,12 @@ export default function App() {
     }));
   };
 
-  // Reset to default sample data
+  // Clear all data including expenses, shifts, and savings
   const handleResetData = () => {
-    if (window.confirm('Reset all expenses, shifts, and savings projects to sample data?')) {
-      localStorage.removeItem('cashflow_tracker_app_data_v1');
-      const freshState = loadAppState();
-      setAppState(freshState);
+    if (window.confirm('Clear all data? This will permanently delete all recorded expenses, work shifts, and reset your savings.')) {
+      const emptyState = getEmptyAppState();
+      setAppState(emptyState);
+      saveAppState(emptyState);
       setCurrentScreen('home');
     }
   };
@@ -238,7 +238,7 @@ export default function App() {
         <AllocateMoneyScreen
           shifts={appState.shifts}
           savingsProjects={appState.savingsProjects || DEFAULT_SAVINGS_PROJECTS}
-          generalSavings={appState.generalSavings || 450}
+          generalSavings={appState.generalSavings ?? 0}
           onBack={() => setCurrentScreen('home')}
           onSaveToGeneralSavings={handleSaveToGeneralSavings}
           onAddToProject={handleAddToProject}

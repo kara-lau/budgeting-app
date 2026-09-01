@@ -62,8 +62,8 @@ export const HabitsHistoryScreen: React.FC<HabitsHistoryScreenProps> = ({
           </span>
           <button
             onClick={onResetData}
-            className="text-[11px] font-medium text-stone-500 hover:text-rose-600 cursor-pointer"
-            title="Reset sample data"
+            className="text-[11px] font-bold text-stone-500 hover:text-rose-600 transition-colors px-2 py-1 rounded-lg hover:bg-rose-50 cursor-pointer"
+            title="Clear all data including shifts and expenses"
           >
             Reset
           </button>

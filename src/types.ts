@@ -82,7 +82,7 @@ export const DEFAULT_SAVINGS_PROJECTS: SavingsProject[] = [
   },
   {
     id: 'proj-2',
-    title: 'Weekend road trip',
+    title: 'Society road trip',
     targetAmount: 500,
     currentAmount: 350,
     createdAt: Date.now() - 86400000 * 20,
@@ -92,24 +92,6 @@ export const DEFAULT_SAVINGS_PROJECTS: SavingsProject[] = [
 export const DEFAULT_JOB_PRESETS: JobPreset[] = [
   {
     id: 'job-1',
-    title: 'Apex Cafe',
-    workplace: 'Apex Cafe & Roasters',
-    role: 'Barista',
-    hourlyRate: 24.00,
-    defaultHours: 6.5,
-    defaultBonus: 15.00,
-  },
-  {
-    id: 'job-2',
-    title: 'Event Staffing Pro',
-    workplace: 'Event Staffing Pro',
-    role: 'Event Assistant',
-    hourlyRate: 28.00,
-    defaultHours: 7.0,
-    defaultBonus: 0,
-  },
-  {
-    id: 'job-3',
     title: 'Private Tutoring',
     workplace: 'Tutoring Academy / Clients',
     role: 'Tutor',
