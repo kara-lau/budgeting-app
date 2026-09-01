@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { PhoneFrame } from './components/PhoneFrame';
 import { HomeScreen } from './components/HomeScreen';
 import { RecordExpenseScreen } from './components/RecordExpenseScreen';
@@ -7,6 +7,7 @@ import { AllocateMoneyScreen } from './components/AllocateMoneyScreen';
 import { CategoryUsageScreen } from './components/CategoryUsageScreen';
 import { HabitsHistoryScreen } from './components/HabitsHistoryScreen';
 import { SettingsScreen } from './components/SettingsScreen';
+import { AuthLoginScreen } from './components/AuthLoginScreen';
 import { 
   AppState, 
   DEFAULT_JOB_PRESETS, 
@@ -17,7 +18,9 @@ import {
   Shift, 
   ShiftStatus 
 } from './types';
-import { loadAppState, saveAppState, getEmptyAppState } from './utils/storage';
+import { getSampleAppState, getEmptyAppState } from './utils/storage';
+import { auth, onAuthStateChanged, signOutUser, User } from './lib/firebase';
+import { loadUserAppState, saveUserAppState, saveUserProfile } from './services/firestoreSync';
 
 export type AppScreen = 
   | 'home'
@@ -29,14 +32,59 @@ export type AppScreen =
   | 'settings';
 
 export default function App() {
-  const [appState, setAppState] = useState<AppState>(() => loadAppState());
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [isAuthChecking, setIsAuthChecking] = useState<boolean>(true);
+  const [appState, setAppState] = useState<AppState>(() => getSampleAppState());
   const [currentScreen, setCurrentScreen] = useState<AppScreen>('home');
   const [isFramed, setIsFramed] = useState<boolean>(true);
+  const isInitialLoadRef = useRef<boolean>(true);
 
-  // Sync state to localStorage
+  // 1. Listen for Google Auth state changes
   useEffect(() => {
-    saveAppState(appState);
-  }, [appState]);
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        setCurrentUser(user);
+        saveUserProfile(user);
+        
+        try {
+          const userState = await loadUserAppState(user.uid);
+          setAppState(userState);
+        } catch (err) {
+          console.error('Error fetching user data from Firestore:', err);
+        }
+      } else {
+        setCurrentUser(null);
+        setCurrentScreen('home');
+      }
+      setIsAuthChecking(false);
+      isInitialLoadRef.current = false;
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  // 2. Persist state changes to Firestore & local storage for current user
+  useEffect(() => {
+    if (isInitialLoadRef.current || !currentUser) return;
+
+    const timeoutId = setTimeout(() => {
+      saveUserAppState(currentUser.uid, appState);
+    }, 400);
+
+    return () => clearTimeout(timeoutId);
+  }, [appState, currentUser]);
+
+  // Sign out handler
+  const handleSignOut = async () => {
+    try {
+      await signOutUser();
+      setCurrentUser(null);
+      setAppState(getEmptyAppState());
+      setCurrentScreen('home');
+    } catch (err) {
+      console.error('Failed to sign out:', err);
+    }
+  };
 
   // Expense Handlers
   const handleAddExpense = (newExpData: Omit<Expense, 'id' | 'createdAt'>) => {
@@ -181,7 +229,9 @@ export default function App() {
     if (window.confirm('Clear all data? This will permanently delete all recorded expenses, work shifts, and reset your savings.')) {
       const emptyState = getEmptyAppState();
       setAppState(emptyState);
-      saveAppState(emptyState);
+      if (currentUser) {
+        saveUserAppState(currentUser.uid, emptyState);
+      }
       setCurrentScreen('home');
     }
   };
@@ -196,78 +246,92 @@ export default function App() {
 
   return (
     <PhoneFrame isFramed={isFramed} onToggleFrame={() => setIsFramed(!isFramed)}>
-      {currentScreen === 'home' && (
-        <HomeScreen
-          onNavigate={(screen) => setCurrentScreen(screen)}
-          receivedEarnings={receivedEarnings}
-          totalExpenses={totalExpenses}
-          monthlyBudgetLimit={appState.monthlyBudgetLimit || 1200}
-          pendingShiftCount={pendingShiftCount}
-        />
-      )}
+      {isAuthChecking ? (
+        <div className="flex-1 flex flex-col items-center justify-center p-8 bg-stone-50 text-stone-600">
+          <div className="w-10 h-10 border-3 border-amber-400 border-t-amber-600 rounded-full animate-spin mb-3" />
+          <span className="text-xs font-bold text-stone-500 tracking-wide uppercase">Connecting Yippee Planner...</span>
+        </div>
+      ) : !currentUser ? (
+        <AuthLoginScreen onSuccess={() => setCurrentScreen('home')} />
+      ) : (
+        <>
+          {currentScreen === 'home' && (
+            <HomeScreen
+              onNavigate={(screen) => setCurrentScreen(screen)}
+              receivedEarnings={receivedEarnings}
+              totalExpenses={totalExpenses}
+              monthlyBudgetLimit={appState.monthlyBudgetLimit || 1200}
+              pendingShiftCount={pendingShiftCount}
+              currentUser={currentUser}
+            />
+          )}
 
-      {currentScreen === 'category_usage' && (
-        <CategoryUsageScreen
-          expenses={appState.expenses}
-          categoryLimits={appState.categoryLimits}
-          onBack={() => setCurrentScreen('home')}
-        />
-      )}
+          {currentScreen === 'category_usage' && (
+            <CategoryUsageScreen
+              expenses={appState.expenses}
+              categoryLimits={appState.categoryLimits}
+              onBack={() => setCurrentScreen('home')}
+            />
+          )}
 
-      {currentScreen === 'record_expense' && (
-        <RecordExpenseScreen
-          onBack={() => setCurrentScreen('home')}
-          onAddExpense={handleAddExpense}
-        />
-      )}
+          {currentScreen === 'record_expense' && (
+            <RecordExpenseScreen
+              onBack={() => setCurrentScreen('home')}
+              onAddExpense={handleAddExpense}
+            />
+          )}
 
-      {currentScreen === 'log_earnings' && (
-        <LogEarningsScreen
-          shifts={appState.shifts}
-          jobPresets={appState.jobPresets || DEFAULT_JOB_PRESETS}
-          onBack={() => setCurrentScreen('home')}
-          onAddShift={handleAddShift}
-          onToggleShiftStatus={handleToggleShiftStatus}
-          onDeleteShift={handleDeleteShift}
-          onAddJobPreset={handleAddJobPreset}
-          onDeleteJobPreset={handleDeleteJobPreset}
-        />
-      )}
+          {currentScreen === 'log_earnings' && (
+            <LogEarningsScreen
+              shifts={appState.shifts}
+              jobPresets={appState.jobPresets || DEFAULT_JOB_PRESETS}
+              onBack={() => setCurrentScreen('home')}
+              onAddShift={handleAddShift}
+              onToggleShiftStatus={handleToggleShiftStatus}
+              onDeleteShift={handleDeleteShift}
+              onAddJobPreset={handleAddJobPreset}
+              onDeleteJobPreset={handleDeleteJobPreset}
+            />
+          )}
 
-      {currentScreen === 'allocate_money' && (
-        <AllocateMoneyScreen
-          shifts={appState.shifts}
-          savingsProjects={appState.savingsProjects || DEFAULT_SAVINGS_PROJECTS}
-          generalSavings={appState.generalSavings ?? 0}
-          onBack={() => setCurrentScreen('home')}
-          onSaveToGeneralSavings={handleSaveToGeneralSavings}
-          onAddToProject={handleAddToProject}
-          onAddProject={handleAddProject}
-          onDeleteProject={handleDeleteProject}
-        />
-      )}
+          {currentScreen === 'allocate_money' && (
+            <AllocateMoneyScreen
+              shifts={appState.shifts}
+              savingsProjects={appState.savingsProjects || DEFAULT_SAVINGS_PROJECTS}
+              generalSavings={appState.generalSavings ?? 0}
+              onBack={() => setCurrentScreen('home')}
+              onSaveToGeneralSavings={handleSaveToGeneralSavings}
+              onAddToProject={handleAddToProject}
+              onAddProject={handleAddProject}
+              onDeleteProject={handleDeleteProject}
+            />
+          )}
 
-      {currentScreen === 'habits_history' && (
-        <HabitsHistoryScreen
-          expenses={appState.expenses}
-          shifts={appState.shifts}
-          onBack={() => setCurrentScreen('home')}
-          onDeleteExpense={handleDeleteExpense}
-          onResetData={handleResetData}
-        />
-      )}
+          {currentScreen === 'habits_history' && (
+            <HabitsHistoryScreen
+              expenses={appState.expenses}
+              shifts={appState.shifts}
+              onBack={() => setCurrentScreen('home')}
+              onDeleteExpense={handleDeleteExpense}
+              onResetData={handleResetData}
+            />
+          )}
 
-      {currentScreen === 'settings' && (
-        <SettingsScreen
-          categoryLimits={appState.categoryLimits}
-          monthlyBudgetLimit={appState.monthlyBudgetLimit}
-          jobPresets={appState.jobPresets || DEFAULT_JOB_PRESETS}
-          onBack={() => setCurrentScreen('home')}
-          onUpdateCategoryLimits={handleUpdateCategoryLimits}
-          onAddJobPreset={handleAddJobPreset}
-          onUpdateJobPreset={handleUpdateJobPreset}
-          onDeleteJobPreset={handleDeleteJobPreset}
-        />
+          {currentScreen === 'settings' && (
+            <SettingsScreen
+              categoryLimits={appState.categoryLimits}
+              monthlyBudgetLimit={appState.monthlyBudgetLimit}
+              jobPresets={appState.jobPresets || DEFAULT_JOB_PRESETS}
+              currentUser={currentUser}
+              onBack={() => setCurrentScreen('home')}
+              onUpdateCategoryLimits={handleUpdateCategoryLimits}
+              onAddJobPreset={handleAddJobPreset}
+              onUpdateJobPreset={handleUpdateJobPreset}
+              onDeleteJobPreset={handleDeleteJobPreset}
+              onSignOut={handleSignOut}
+            />
+          )}
+        </>
       )}
     </PhoneFrame>
   );

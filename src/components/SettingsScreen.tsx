@@ -15,21 +15,27 @@ import {
   Plus,
   Pencil,
   Trash2,
-  X
+  X,
+  LogOut,
+  User as UserIcon,
+  ShieldCheck
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { JobPreset } from '../types';
 import { formatCurrency } from '../utils/storage';
+import type { User } from '../lib/firebase';
 
 interface SettingsScreenProps {
   categoryLimits?: Record<string, number>;
   monthlyBudgetLimit?: number;
   jobPresets?: JobPreset[];
+  currentUser?: User | null;
   onBack: () => void;
   onUpdateCategoryLimits: (newLimits: Record<string, number>, newTotalBudget: number) => void;
   onAddJobPreset?: (preset: Omit<JobPreset, 'id'>) => JobPreset;
   onUpdateJobPreset?: (updated: JobPreset) => void;
   onDeleteJobPreset?: (id: string) => void;
+  onSignOut?: () => void;
 }
 
 export const SettingsScreen: React.FC<SettingsScreenProps> = ({
@@ -41,13 +47,15 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
   },
   monthlyBudgetLimit = 1200,
   jobPresets = [],
+  currentUser,
   onBack,
   onUpdateCategoryLimits,
   onAddJobPreset,
   onUpdateJobPreset,
   onDeleteJobPreset,
+  onSignOut,
 }) => {
-  const [activeTab, setActiveTab] = useState<'budgets' | 'jobs'>('budgets');
+  const [activeTab, setActiveTab] = useState<'budgets' | 'jobs' | 'account'>('budgets');
 
   // Local state for editing category limits
   const [limits, setLimits] = useState<Record<string, number>>({
@@ -259,31 +267,43 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
           <div className="w-12" />
         </div>
 
-        {/* Tab Switcher: Budgets vs Jobs */}
-        <div className="bg-stone-100 p-1 rounded-xl flex items-center mb-4">
+        {/* Tab Switcher: Budgets vs Jobs vs Account */}
+        <div className="bg-stone-100 p-1 rounded-xl flex items-center mb-4 gap-0.5">
           <button
             type="button"
             onClick={() => setActiveTab('budgets')}
-            className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+            className={`flex-1 py-2 px-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1 cursor-pointer ${
               activeTab === 'budgets'
                 ? 'bg-white text-stone-900 shadow-xs'
                 : 'text-stone-600 hover:text-stone-900'
             }`}
           >
             <PieChart className="w-3.5 h-3.5 text-indigo-500" />
-            <span>Category Budgets</span>
+            <span>Budgets</span>
           </button>
           <button
             type="button"
             onClick={() => setActiveTab('jobs')}
-            className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+            className={`flex-1 py-2 px-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1 cursor-pointer ${
               activeTab === 'jobs'
                 ? 'bg-white text-stone-900 shadow-xs'
                 : 'text-stone-600 hover:text-stone-900'
             }`}
           >
             <Briefcase className="w-3.5 h-3.5 text-pink-500" />
-            <span>Jobs & Rates ({jobPresets.length})</span>
+            <span>Jobs ({jobPresets.length})</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('account')}
+            className={`flex-1 py-2 px-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1 cursor-pointer ${
+              activeTab === 'account'
+                ? 'bg-white text-stone-900 shadow-xs'
+                : 'text-stone-600 hover:text-stone-900'
+            }`}
+          >
+            <UserIcon className="w-3.5 h-3.5 text-amber-500" />
+            <span>Account</span>
           </button>
         </div>
 
@@ -649,6 +669,69 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
                   </div>
                 );
               })}
+            </div>
+          </div>
+        )}
+
+        {/* Tab 3: Google Account & Cloud Sync */}
+        {activeTab === 'account' && (
+          <div className="space-y-4 animate-fadeIn">
+            {/* User Profile Card */}
+            <div className="p-4 rounded-2xl bg-white border border-stone-200/90 shadow-xs">
+              <div className="flex items-center gap-3.5 mb-4">
+                {currentUser?.photoURL ? (
+                  <img
+                    src={currentUser.photoURL}
+                    alt={currentUser.displayName || 'User'}
+                    className="w-14 h-14 rounded-2xl border-2 border-amber-400 shadow-xs object-cover"
+                    referrerPolicy="no-referrer"
+                  />
+                ) : (
+                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-amber-400 to-orange-500 text-white font-bold text-xl flex items-center justify-center shadow-xs">
+                    {(currentUser?.displayName || currentUser?.email || 'U')[0].toUpperCase()}
+                  </div>
+                )}
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-1.5">
+                    <h3 className="text-base font-extrabold text-stone-900 truncate">
+                      {currentUser?.displayName || 'Yippee User'}
+                    </h3>
+                  </div>
+                  <p className="text-xs text-stone-500 truncate font-medium">
+                    {currentUser?.email || 'Logged in via Google'}
+                  </p>
+                  <div className="inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-bold">
+                    <ShieldCheck className="w-3 h-3 text-emerald-600" />
+                    <span>Google Authenticated</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-3 rounded-xl bg-stone-50 border border-stone-200/60 text-xs text-stone-600 space-y-1">
+                <div className="font-semibold text-stone-800 flex items-center justify-between">
+                  <span>Cloud Database Sync</span>
+                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-100 text-amber-900">Active</span>
+                </div>
+                <p className="text-[11px] text-stone-500">
+                  Your shifts, expenses, job presets, and savings goals are automatically synchronized in real-time to your Google Account.
+                </p>
+              </div>
+            </div>
+
+            {/* Account Actions */}
+            <div className="space-y-2">
+              <button
+                type="button"
+                onClick={() => {
+                  if (window.confirm('Sign out of your Google Account?')) {
+                    if (onSignOut) onSignOut();
+                  }
+                }}
+                className="w-full py-3.5 px-4 bg-rose-50 hover:bg-rose-100 active:bg-rose-200 text-rose-700 rounded-2xl font-bold text-xs flex items-center justify-center gap-2 border border-rose-200 transition-colors cursor-pointer"
+              >
+                <LogOut className="w-4 h-4 text-rose-600" />
+                <span>Sign Out of Google</span>
+              </button>
             </div>
           </div>
         )}

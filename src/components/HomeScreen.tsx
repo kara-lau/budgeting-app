@@ -9,6 +9,7 @@ import {
   Settings 
 } from 'lucide-react';
 import { formatCurrency } from '../utils/storage';
+import type { User } from '../lib/firebase';
 
 interface HomeScreenProps {
   onNavigate: (screen: 'record_expense' | 'log_earnings' | 'allocate_money' | 'category_usage' | 'habits_history' | 'settings') => void;
@@ -16,6 +17,7 @@ interface HomeScreenProps {
   totalExpenses: number;
   monthlyBudgetLimit: number;
   pendingShiftCount: number;
+  currentUser?: User | null;
 }
 
 export const HomeScreen: React.FC<HomeScreenProps> = ({
@@ -24,6 +26,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   totalExpenses,
   monthlyBudgetLimit = 1200,
   pendingShiftCount,
+  currentUser,
 }) => {
   const netBalance = receivedEarnings - totalExpenses;
   const budgetUsagePct = Math.min(100, Math.round((totalExpenses / monthlyBudgetLimit) * 100));
@@ -48,14 +51,34 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
               Yippee Planner
             </h1>
           </div>
-          <button
-            onClick={() => onNavigate('habits_history')}
-            className="p-2.5 rounded-full bg-white border border-stone-200/80 shadow-xs hover:bg-stone-50 text-stone-600 transition-colors flex items-center gap-1.5 text-xs font-medium cursor-pointer"
-            title="View spending history"
-          >
-            <History className="w-4 h-4 text-stone-600" />
-            <span className="hidden xs:inline">History</span>
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => onNavigate('habits_history')}
+              className="p-2.5 rounded-full bg-white border border-stone-200/80 shadow-xs hover:bg-stone-50 text-stone-600 transition-colors flex items-center gap-1.5 text-xs font-medium cursor-pointer"
+              title="View spending history"
+            >
+              <History className="w-4 h-4 text-stone-600" />
+              <span className="hidden xs:inline">History</span>
+            </button>
+            {currentUser && (
+              <button
+                onClick={() => onNavigate('settings')}
+                className="w-9 h-9 rounded-full overflow-hidden border border-amber-400 shadow-xs hover:opacity-90 transition-opacity cursor-pointer flex items-center justify-center bg-amber-100 text-amber-900 font-bold text-xs"
+                title={`Signed in as ${currentUser.displayName || currentUser.email}`}
+              >
+                {currentUser.photoURL ? (
+                  <img
+                    src={currentUser.photoURL}
+                    alt={currentUser.displayName || 'User'}
+                    className="w-full h-full object-cover"
+                    referrerPolicy="no-referrer"
+                  />
+                ) : (
+                  (currentUser.displayName || currentUser.email || 'U')[0].toUpperCase()
+                )}
+              </button>
+            )}
+          </div>
         </div>
 
         {/* 1. Dashboard: Overall Monthly Budget Usage */}

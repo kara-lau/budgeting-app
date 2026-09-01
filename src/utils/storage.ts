@@ -3,7 +3,7 @@ import { AppState, DEFAULT_CATEGORIES, DEFAULT_JOB_PRESETS, DEFAULT_SAVINGS_PROJ
 const STORAGE_KEY = 'cashflow_tracker_app_data_v1';
 
 // Generate realistic mock data around current date
-const generateSeedData = (): AppState => {
+export const generateSeedData = (): AppState => {
   const now = new Date();
   const year = now.getFullYear();
   const month = String(now.getMonth() + 1).padStart(2, '0');
@@ -246,6 +246,8 @@ const generateSeedData = (): AppState => {
     },
   };
 };
+
+export const getSampleAppState = generateSeedData;
 
 export const getEmptyAppState = (): AppState => {
   const initialAllocations = DEFAULT_CATEGORIES.map(cat => ({

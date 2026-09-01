@@ -1,0 +1,44 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile and authentication details",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "email"]
+    },
+    "UserData": {
+      "title": "UserData",
+      "description": "User budget state, shifts, expenses, and savings data",
+      "type": "object",
+      "properties": {
+        "expenses": { "type": "array" },
+        "shifts": { "type": "array" },
+        "budgetConfig": { "type": "object" },
+        "jobPresets": { "type": "array" },
+        "savingsProjects": { "type": "array" },
+        "generalSavings": { "type": "number" },
+        "monthlyBudgetLimit": { "type": "number" },
+        "categoryLimits": { "type": "object" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["updatedAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "entity": "User",
+      "description": "User profile document"
+    },
+    "/users/{userId}/userData/{docId}": {
+      "entity": "UserData",
+      "description": "User budgeting app state"
+    }
+  }
+}
